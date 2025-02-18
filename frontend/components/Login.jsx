@@ -23,20 +23,16 @@ export default function Login() {
 
       if (response.status === 200) {
         setMsg("Login successful. Redirecting to dashboard...");
-        //         localStorage.setItem('token', response.data.token);
-        // localStorage.setItem('user', JSON.stringify(response.data.reqUser));
-        // navigate('/dashboard'); // or wherever you want to redirect after login
-        // setTimeout(() => {
-        //   navigate("/login");
-        // }, 3000);
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.reqUser));
       }
 
     } catch (error) {
       if (error.response) {
 
-        if (error.response.status === 404 && error.response.data.error === "User not found") {
+        if (error.response.status === 400 && error.response.data.error === "User not found") {
           setMsg("User not found. Please register.");
-        } else {
+        } else if (error.response.status === 400 && error.response.data.error === "Unable to login, invalid credential") {
           setMsg(`Invalid credentials. Please try again.`);
         }
       } else {
@@ -79,7 +75,7 @@ export default function Login() {
               className="block w-full rounded-md border border-gray-400 my-2 px-1 py-1.5 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
             />
           </div>
-          <p className={msg === "Logged in successful! Redirecting to dashboard..." ? "text-green-600" : "text-red-600"}>{msg}</p>
+          <p className={msg === "Login successful. Redirecting to dashboard..." ? "text-green-600" : "text-red-600"}>{msg}</p>
           <div>
             <button
               type="submit"

@@ -1,89 +1,64 @@
-const express = require('express');
-const user = require('../MODELS/user');
+const express = require('express')
+const user = require('../MODELS/user')
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
-// Route to test user routes
 router.get('/', (req, res) => {
-  res.send('user routes');
-});
+    res.send('user routes')
+})
 
-// Register Route
 router.post('/register', async (req, res) => {
-  const { name, email, password } = req.body;
-  try {
-    // Trim spaces to avoid accidental white spaces
-    const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
 
-    // Check if user already exists
-    const existingUser = await user.findOne({ email: trimmedEmail });
-    if (existingUser) {
-      return res.status(400).send({ error: "User already exists" });
+    const { name, email, password } = req.body;
+    try {
+        const newUser = new user({
+            name, email, password
+        });
+        await newUser.save();
+        res.status(200).send({ message: "user created succesfully" })
+
     }
-
-    console.log("Entered password during registration: ", trimmedPassword);
-    
-    // Hash the password before saving to DB
-    const hashedPassword = await bcrypt.hash(trimmedPassword, 10);
-    console.log("Hashed password after registration:", hashedPassword);
-    
-    // Create new user object
-    const newUser = new user({
-      name,
-      email: trimmedEmail,
-      password: hashedPassword
-    });
-    
-    // Save user to database
-    await newUser.save();
-
-    // Return success message
-    res.status(200).send({ message: "User registered successfully!" });
-  } catch (err) {
-    console.error("Error during registration:", err);
-    res.status(500).send({ error: "Server error. Please try again." });
-  }
-});
+    catch (err) {
+        res.json({ message: err })
+    }
+})
 
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+    try {
+        const { email, password } = req.body;
+        const reqUser = await user.findOne({ email })
 
-  try {
-    // Find the user by email
-    const reqUser = await user.findOne({ email });
-    if (!reqUser) {
-      return res.status(404).send({ error: "User not found" });
+        if (!reqUser) {
+            throw new Error("User not found")
+        }
+        const isMatch = await bcrypt.compare(password, reqUser.password)
+       
+
+        if (!isMatch) {
+            throw new Error('unable to login, invalid credential')
+        }
+
+        const token = jwt.sign({
+            _id: reqUser._id.toString()
+        }, process.env.JWT_SECRET_KEY)
+
+        res.status(200).send({ reqUser, token, message: "logged in succesfully" });
+
     }
-
-    // Compare the entered password with the hashed password in the DB
-    const isMatch = await bcrypt.compare(password, reqUser.password);
-
-    // If the passwords don't match, return error
-    if (!isMatch) {
-      return res.status(400).send({ error: "Invalid credentials" });
+    catch (err) {
+      if( err.message === "User not found"){
+        res.status(400).send({ message: "User not found" })
+      }
+      else if(err.message === "Unable to login, invalid credential"){
+        res.status(400).send({ error: "Unable to login, invalid credential" })
+      }
+      else{
+        res.status(400).send({ error: "Something went wrong" })
+      }
     }
+})
 
-    // If passwords match, generate JWT token
-    const token = jwt.sign(
-      { _id: reqUser._id.toString() },
-      process.env.JWT_SECRET_KEY,
-      { expiresIn: '1h' } // 1 hour expiration
-    );
-
-    // Send the response with user data and token
-    res.status(200).send({
-      reqUser,
-      token,
-      message: "Logged in successfully"
-    });
-
-  } catch (err) {
-    console.error("Error during login:", err);
-    res.status(500).send({ error: "Server error. Please try again." });
-  }
-});
 
 
 module.exports = router;

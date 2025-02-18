@@ -23,13 +23,13 @@ export default function Register() {
         password,
       });
 
-      if (response.status === 201) {
+      if (response.status === 200) {
         setMsg("Registration successful! Redirecting to login...");
         setTimeout(() => {
           navigate("/login");
         }, 3000);
       }
-
+  
     } catch (error) {
       if (error.response) {
 
