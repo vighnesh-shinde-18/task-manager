@@ -13,7 +13,7 @@ router.get('/test', auth, (req, res) => {
 
 router.post('/createtask', auth, async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, description, priority } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: "Description is required" });
@@ -21,6 +21,8 @@ router.post('/createtask', auth, async (req, res) => {
 
     const newTask = new task({
       title: title,
+      description: description,
+      priority: priority,
       owner: req.user._id
     });
 
@@ -94,14 +96,12 @@ router.delete('/delete/:id', auth, async (req, res) => {
       _id: taskId,
       owner: owner
     });
+    res.status(200).send({ "deleted successfully": deletedTask });
+  } catch (error) {
+    res.json({ message: error });
+  }
+});
 
-    res.send("deleted successfully", deletedTask)
-  }
-  catch (error) {
-    res.json({ message: error })
-  }
-}
-)
 
 router.get('/deletealltasks', auth, async (req, res) => {
   try {

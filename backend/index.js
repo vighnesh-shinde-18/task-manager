@@ -6,19 +6,29 @@ const db = require('./db')
 const userRouter = require('./ROUTES/userRoutes')
 const taskRouter = require('./ROUTES/taskRoutes')
 
-app.use(cors())
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+    res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
+
 app.use(bodyParser.json())
 require('dotenv').config();
-const port = process.env.PORT 
+const port = process.env.PORT
 
 app.use('/users', userRouter)
 app.use('/tasks', taskRouter)
 
-app.get('/', (req,res)=>{
+app.get('/', (req, res) => {
     res.send('api working')
 })
 
-app.listen(port,()=>{
-    console.log("api is listning")
+app.listen(port, () => {
+    console.log("api is listning on",port)
 });
 
