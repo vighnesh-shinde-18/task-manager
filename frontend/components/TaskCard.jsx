@@ -1,12 +1,11 @@
 
-function TaskCard({ task, handleComplete, handleDelete }) {
-
+function TaskCard({ task, handleComplete, handleDelete, handleUndo, handleEdit }) {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case "high": return "bg-red-100 text-red-800";
-      case "medium": return "bg-yellow-100 text-yellow-800";
-      case "low": return "bg-green-100 text-green-800";
+      case "High": return "bg-red-100 text-red-800";
+      case "Medium": return "bg-yellow-100 text-yellow-800";
+      case "Low": return "bg-green-100 text-green-800";
     }
   };
 
@@ -40,15 +39,16 @@ function TaskCard({ task, handleComplete, handleDelete }) {
           <p className="text-gray-600 mt-1">{task.description}</p>
           <div className="flex flex-col sm:flex-row items-center gap-4 mt-2 text-sm text-gray-500">
             <div className="flex flex-col sm:flex-col"> <span> <b className="text-gray-600">Created</b>: {formatDate(task.createdAt)}</span>
-              {task.completedAt && <span>Completed: {formatDate(task.completedAt)}</span>}
+              {task.isCompleted && <span> <b className="text-gray-600">Completed</b> : {formatDate(task.completedAt)}</span>}
             </div>
             <span className={`px-2 hidden sm:flex py-1 rounded-full text-xs ${getPriorityColor(task.priority)}`}>{task.priority}</span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 ml-4">
-          <button onClick={() => handleComplete(task.id)} className="p-2 text-gray-500 cursor-pointer hover:text-green-600">✔️</button>
-          <button onClick={() => handleEdit(task)} className="p-2 text-gray-500 cursor-pointer hover:text-blue-600">✏️</button>
-          <button onClick={() => handleDelete(task.id)} className="p-2 text-gray-500 cursor-pointer hover:text-red-600">🗑️</button>
+          {!task.isCompleted && <button onClick={() => handleComplete(task._id)} className="p-2 text-gray-500 cursor-pointer">✔️</button>}
+          {!task.isCompleted && <button onClick={() => handleEdit(task._id)} className="p-2 text-gray-500 cursor-pointer">✏️</button>}
+          {<button onClick={() => handleDelete(task._id)} className="p-2 text-gray-500 cursor-pointer">🗑️</button>}
+          {task.isCompleted && <button onClick={() => handleUndo(task._id)} className="p-2 text-gray-500 cursor-pointer">🔙</button>}
           <div className={`px-2 py-1 flex sm:hidden rounded-full text-xs ${getPriorityColor(task.priority)}`}>{task.priority}</div>
         </div>
       </div>

@@ -34,10 +34,9 @@ export default function Login() {
 
     } catch (error) {
       if (error.response) {
-
         if (error.response.status === 400 && error.response.data.error === "User not found") {
           setMsg("User not found. Please register.");
-        } else if (error.response.status === 400 && error.response.data.error === "Unable to login, invalid credential") {
+        } else if (error.response.status === 400 && error.response.data.error === 'Unable to login, invalid credential') {
           setMsg(`Invalid credentials. Please try again.`);
         }
       } else {

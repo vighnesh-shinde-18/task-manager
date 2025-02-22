@@ -10,7 +10,7 @@ const taskSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
-    status: {
+    isCompleted: {
         type: Boolean,
         default: false
     },
@@ -19,10 +19,14 @@ const taskSchema = new mongoose.Schema({
         require: true,
         ref: "user"
     },
-    priority:{
-        type:String,
-        enum:["low","medium","high"],
-        default:"high"
+    priority: {
+        type: String,
+        enum: ["Low", "Medium", "High"],
+        default: "High"
+    },
+    completedAt: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true

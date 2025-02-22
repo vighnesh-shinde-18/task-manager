@@ -3,7 +3,10 @@ const user = require('../MODELS/user');
 
 const auth = async (req, res, next) => {
     try {
+        console.log(req.header('Authorization'));
         const token = req.header('Authorization')?.replace("Bearer ", '');
+        console.log("inside auth ", token)
+
         if (!token) {
             return res.status(401).send({ message: 'Token is missing' });
         }

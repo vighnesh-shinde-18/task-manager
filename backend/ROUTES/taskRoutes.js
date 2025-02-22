@@ -4,6 +4,7 @@ const router = express.Router();
 const task = require('../MODELS/task');
 const auth = require('../MIDDLEWARES/auth');
 
+
 router.get('/test', auth, (req, res) => {
   res.json({
     message: "Task routes are working",
@@ -27,7 +28,7 @@ router.post('/createtask', auth, async (req, res) => {
     });
 
     await newTask.save();
-    res.status(201).json({ task: newTask, message: "Task created successfully" });
+    res.status(200).json({ task: newTask, message: "Task created successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -88,22 +89,55 @@ router.patch('/update/:id', auth, async (req, res) => {
   }
 })
 
-router.delete('/delete/:id', auth, async (req, res) => {
+router.patch('/complete/:id', auth, async (req, res) => {
   try {
+
     const taskId = req.params.id;
     const owner = req.user._id;
-    const deletedTask = await task.findOneAndDelete({
-      _id: taskId,
-      owner: owner
-    });
-    res.status(200).send({ "deleted successfully": deletedTask });
+
+    const taskData = await task.findOne({ _id: taskId, owner });
+
+    if (!taskData) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    const completeStatus = !taskData.isCompleted;
+    const updatedTask = await task.findOneAndUpdate(
+      { _id: taskId, owner },
+      { $set: { isCompleted: completeStatus, completedAt: new Date() } },
+      { new: true }
+    );
+
+    res.json({ message: "Updated successfully", task: updatedTask });
   } catch (error) {
-    res.json({ message: error });
+    res.status(500).json({ message: error.message });
   }
 });
 
 
-router.get('/deletealltasks', auth, async (req, res) => {
+
+router.delete("/delete/:id", auth, async (req, res) => {
+  try {
+    const taskId = req.params.id;
+    const owner = req.user.id;
+
+
+    const deletedTask = await task.findOneAndDelete({ _id: taskId, owner: owner });
+
+    if (!deletedTask) {
+      return res.status(404).json({ message: "Task not found or unauthorized" });
+    }
+
+    res.status(200).json({ message: "Deleted successfully", deletedTask });
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+
+
+router.delete('/deletealltasks', auth, async (req, res) => {
   try {
     const owner = req.user._id;
     const tasks = await task.find({ owner: owner });
