@@ -12,6 +12,16 @@ router.post('/register', async (req, res) => {
 
     const { name, email, password } = req.body;
     try {
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: "Please fill all the fields" });
+        }
+
+
+        const existingUser = await user.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: "User already exists" });
+        }
+
         const newUser = new user({
             name, email, password
         });
@@ -20,9 +30,11 @@ router.post('/register', async (req, res) => {
 
     }
     catch (err) {
-        res.json({ message: err })
+        return res.status(500).json({ error: "Internal Server Error" });
     }
 })
+
+
 
 router.post('/login', async (req, res) => {
     try {
@@ -33,7 +45,7 @@ router.post('/login', async (req, res) => {
             throw new Error("User not found")
         }
         const isMatch = await bcrypt.compare(password, reqUser.password)
-       
+
         if (!isMatch) {
             throw new Error('Unable to login, invalid credential')
         }
@@ -46,15 +58,15 @@ router.post('/login', async (req, res) => {
 
     }
     catch (err) {
-      if( err.message === "User not found"){
-        res.status(400).send({ message: "User not found" })
-      }
-      else if(err.message === "Unable to login, invalid credential"){
-        res.status(400).send({ error: "Unable to login, invalid credential" })
-      }
-      else{
-        res.status(400).send({ error: "Something went wrong" })
-      }
+        if (err.message === "User not found") {
+            res.status(400).send({ error: "User not found" })
+        }
+        else if (err.message === "Unable to login, invalid credential") {
+            res.status(400).send({ error: "Unable to login, invalid credential" })
+        }
+        else {
+            res.status(400).send({ error: "Something went wrong" })
+        }
     }
 })
 

@@ -80,7 +80,6 @@ export default function Header() {
                     </button>
                 </div>
 
-                {/* Mobile Menu */}
                 {menuOpen && (
                     <div className="md:hidden bg-gray-700 py-3 px-4 space-y-2">
                         <span className="block text-lg font-semibold text-gray-300">
